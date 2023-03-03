@@ -1,17 +1,16 @@
 import torch
 import numpy as np
 from sklearn.metrics import mean_squared_error
-import matplotlib.pyplot as plt
 import wandb
 from tqdm import tqdm
 import os
 from datetime import datetime
 import timeit
 
-from SetupData.Dataset import DatasetFromCsv
 from ModelInformation.NeuralNet import NeuralNet
 import ModelInformation.ModelNetStucture as mns
-from Train.WeightedMSE import WeightedMSELoss
+from Visualization.Visualize import plot_predictions
+from Parameters.ModelV1Parameters import v1ModelDataSummary
 
 from definitions import ROOT_DIR
 
@@ -24,32 +23,14 @@ def prepare_data(data, config):
     return train_dataloader, val_dataloader, test_dataloader
 
 
-def plot_predictions(predictions, actuals):
-    predictions_x = predictions[:, 0]
-    predictions_y = predictions[:, 1]
-    predictions_z = predictions[:, 2]
-    actuals_x = actuals[:, 0]
-    actuals_y = actuals[:, 1]
-    actuals_z = actuals[:, 2]
 
-    fig, axs = plt.subplots(3, 1)
-    axs[0].plot(actuals_x)
-    axs[0].plot(predictions_x)
-    axs[0].set_ylabel("x")
-    axs[1].plot(actuals_y)
-    axs[1].plot(predictions_y)
-    axs[1].set_ylabel("y")
-    axs[2].plot(actuals_z)
-    axs[2].plot(predictions_z)
-    axs[2].set_ylabel("z")
-    axs[2].set_xlabel("t")
-    plt.show()
 
 
 def model_pipleline(config=None):
     # USE FOR DEBUG PURPOSES ONLY!
     # torch.manual_seed(45)
     # torch.use_deterministic_algorithms(True)
+    modelDataSummary = v1ModelDataSummary
 
     with wandb.init(project="actuator-net", config=config, dir=ROOT_DIR):  # specifying wandb dir to always be located in project root
         config = wandb.config
@@ -61,7 +42,7 @@ def model_pipleline(config=None):
         device = config.device
 
         dataFileName = config.dataset
-        dataset = DatasetFromCsv(dataFileName)
+        dataset = modelDataSummary.getDatasetForMatName(dataFileName)
         train_dataloader, val_dataloader, test_dataloader = prepare_data(dataset, config)
 
         modelNetStructure = mns.createModelNetStructureFromDataset(numLayers=config.num_hidden_layers,
@@ -71,9 +52,7 @@ def model_pipleline(config=None):
         model = NeuralNet(mns=modelNetStructure).to(device)
         print(model)
 
-        # criterion = torch.nn.MSELoss()
-        weights = torch.diag([]) # p * n diagonals...should save default values
-        criterion = WeightedMSELoss(weights)
+        criterion = torch.nn.MSELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
 
         # Training and validation logic
@@ -132,14 +111,23 @@ def model_pipleline(config=None):
                 predictions.append(yhat)
                 actuals.append(actual)
             predictions, actuals = np.vstack(predictions), np.vstack(actuals)
-            mse_x = mean_squared_error(actuals[:, 0], predictions[:, 0])
-            mse_y = mean_squared_error(actuals[:, 1], predictions[:, 1])
-            mse_z = mean_squared_error(actuals[:, 2], predictions[:, 2])
-            print(f"X: MSE = {mse_x}, RMSE = {np.sqrt(mse_x)}")
-            print(f"Y: MSE = {mse_y}, RMSE = {np.sqrt(mse_y)}")
-            print(f"Z: MSE = {mse_z}, RMSE = {np.sqrt(mse_z)}")
-            wandb.log({"mse_x": mse_x, "mse_y": mse_y, "mse_z": mse_z,
-                       "rmse_x": np.sqrt(mse_x), "rmse_y": np.sqrt(mse_y), "rmse_z": np.sqrt(mse_z)})
+
+            outputNames = dataset.yHeaders
+            mseDictionary = {}
+            for i in range(len(outputNames)):
+                mse = mean_squared_error(actuals[:, i], predictions[:, i])
+                print(f"{outputNames[i]}: MSE = {mse}, RMSE = {np.sqrt(mse)}")
+                mseDictionary["mse_" + outputNames[i]] = mse
+
+            wandb.log(mseDictionary)
+            # mse_x = mean_squared_error(actuals[:, 0], predictions[:, 0])
+            # mse_y = mean_squared_error(actuals[:, 1], predictions[:, 1])
+            # mse_z = mean_squared_error(actuals[:, 2], predictions[:, 2])
+            # print(f"X: MSE = {mse_x}, RMSE = {np.sqrt(mse_x)}")
+            # print(f"Y: MSE = {mse_y}, RMSE = {np.sqrt(mse_y)}")
+            # print(f"Z: MSE = {mse_z}, RMSE = {np.sqrt(mse_z)}")
+            # wandb.log({"mse_x": mse_x, "mse_y": mse_y, "mse_z": mse_z,
+            #            "rmse_x": np.sqrt(mse_x), "rmse_y": np.sqrt(mse_y), "rmse_z": np.sqrt(mse_z)})
 
         # Save the model inside the files folder of the corresponding run in the wandb subdirectory. This means the
         # model .pth file will also be uploaded to wandb in the cloud so we won't accidentally delete it.
@@ -154,4 +142,4 @@ def model_pipleline(config=None):
 
         # NOTE: Be sure to set plot to False in hyperparameter sweep configs, else your sweeps will be interrupted!
         if config.plot:
-            plot_predictions(predictions, actuals)
+            plot_predictions(predictions, actuals, outputNames, unnormScaling=modelDataSummary.outputDataStatistics.getUnNormalizationScaling())

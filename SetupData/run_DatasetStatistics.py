@@ -1,15 +1,16 @@
 import pandas as pd
 import numpy as np
 from SetupData.Dataset import DatasetFromCsv
+from Parameters.ModelV1Parameters import v1ModelDataSummary
 # Given some dataframes, prints mean and stdev
 
-def getStatisticsOfDataset(datasetName : str):
-    dataset = DatasetFromCsv(datasetName)
-    inputs = dataset.x
+def getStatisticsOfDataset(csvDataName : str, numPastStates=1):
+    dataset = DatasetFromCsv(csvDataName)
+    inputs = dataset.x[:, ::numPastStates]
     outputs = dataset.y
 
     print("Inputs: ")
-    print(dataset.xHeaders)
+    print(dataset.xHeaders[::numPastStates])
     printStatisticsOfNumpyData(inputs)
 
     print("Outputs: ")
@@ -25,8 +26,9 @@ def printStatisticsOfNumpyData(numpyData : np.ndarray):
     print(sdvs)
 
 if __name__ == "__main__":
-    dataName = "Flatgroundwalking_20220802"
-    getStatisticsOfDataset(dataName)
+    matDataName = "Flatgroundwalking_20220802"
+    csvDataName = v1ModelDataSummary.modelDataStructure.getDatasetCsvSaveName(matDataName)
+    getStatisticsOfDataset(csvDataName, v1ModelDataSummary.modelDataStructure.numPastStates)
 
     # for column in dataframe.columns:
     #     name = column.name

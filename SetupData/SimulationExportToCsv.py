@@ -18,7 +18,7 @@ class MatlabData:
         self.matData = self.extractMatDataAsSimplifiedDict(fileName, parentRegistryList)
 
     def extractMatDataAsSimplifiedDict(self, fileName, parentRegistryList) -> dict:
-        path = os.path.join(definitions.ROOT_DIR, "Data", fileName)
+        path = os.path.join(definitions.DATA_DIR, fileName)
         originalMat = scipy.io.loadmat(path, simplify_cells=True)
         simplifiedMat = originalMat
         for registry in parentRegistryList:

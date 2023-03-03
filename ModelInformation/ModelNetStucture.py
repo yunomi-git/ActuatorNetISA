@@ -1,4 +1,4 @@
-from ModelInformation.ModelDataStructure import ModelDataStructure
+from SetupData.ModelDataStructure import ModelDataStructure
 from SetupData.Dataset import DatasetFromDataframe
 class ModelNetStructure():
     def __init__(self,
