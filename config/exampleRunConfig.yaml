@@ -2,7 +2,7 @@
 
 device:
     desc: The device to perform training on
-    value: cpu
+    value: gpu
 epochs:
     desc: Number of epochs to train for
     value: 100

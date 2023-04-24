@@ -19,7 +19,7 @@ _v1OutputList = [StateDifferenceNames.errorPosition,
                  StateNames.measuredForce,
                  StateNames.measuredSpool,
                  StateNames.measuredCurrent]
-_v1NumPastStates = 3;
+_v1NumPastStates = 3
 
 _modelV1Structure = ModelDataStructure(inputStateList=_v1InputList,
                                        outputStateList=_v1OutputList,

@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 import timeit
 
+import definitions
 from ModelInformation.NeuralNet import NeuralNet
 import ModelInformation.ModelNetStucture as mns
 from Visualization.Visualize import plot_predictions
@@ -26,13 +27,13 @@ def prepare_data(data, config):
 
 
 
-def model_pipleline(config=None):
+def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
     # USE FOR DEBUG PURPOSES ONLY!
     # torch.manual_seed(45)
     # torch.use_deterministic_algorithms(True)
     modelDataSummary = v1ModelDataSummary
 
-    with wandb.init(project="actuator-net", config=config, dir=ROOT_DIR):  # specifying wandb dir to always be located in project root
+    with wandb.init(project="actuator-net", config=config, dir=wandb_path):  # specifying wandb dir to always be located in project root
         config = wandb.config
 
         # Start timing
