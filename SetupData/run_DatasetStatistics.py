@@ -2,7 +2,11 @@ import pandas as pd
 import numpy as np
 from SetupData.Dataset import DatasetFromCsv
 from Parameters.ModelV1Parameters import v1ModelDataSummary
+from Parameters.ModelV2Parameters import v2ModelDataSummary
+
 # Given some dataframes, prints mean and stdev
+
+import timeit
 
 def getStatisticsOfDataset(csvDataName : str, numPastStates=1):
     dataset = DatasetFromCsv(csvDataName)
@@ -27,8 +31,13 @@ def printStatisticsOfNumpyData(numpyData : np.ndarray):
 
 if __name__ == "__main__":
     matDataName = "Flatgroundwalking_20220802"
-    csvDataName = v1ModelDataSummary.modelDataStructure.getDatasetCsvSaveName(matDataName)
+    csvDataName = v2ModelDataSummary.modelDataStructure.getDatasetCsvSaveName(matDataName)
+
+    start_time = timeit.default_timer()
     getStatisticsOfDataset(csvDataName, v1ModelDataSummary.modelDataStructure.numPastStates)
+    end_time = timeit.default_timer()
+    print(f"Time taken: {end_time - start_time} seconds")
+
 
     # for column in dataframe.columns:
     #     name = column.name

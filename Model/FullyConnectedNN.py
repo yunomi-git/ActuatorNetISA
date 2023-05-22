@@ -1,6 +1,8 @@
 from SetupData.ModelDataStructure import ModelDataStructure
 from SetupData.Dataset import DatasetFromDataframe
-class ModelNetStructure():
+import torch
+
+class FCModelNetStructure():
     def __init__(self,
                  numLayers : int,
                  sizeLayers : int,
@@ -23,17 +25,33 @@ class ModelNetStructure():
 
         return layerDims
 
+class FullyConnectedNeuralNet(torch.nn.Module):
+    def __init__(self, mns : FCModelNetStructure):
+        super().__init__()
+        self.forwardModel = torch.nn.Sequential()
+
+        self.forwardModel.append(torch.nn.Linear(mns.inputLayerSize, mns.hiddenLayerSize))
+        self.forwardModel.append(torch.nn.ReLU())
+        for i in range(mns.numLayers):
+            self.forwardModel.append(torch.nn.Linear(mns.hiddenLayerSize, mns.hiddenLayerSize))
+            self.forwardModel.append(torch.nn.ReLU())
+        self.forwardModel.append(torch.nn.Linear(mns.hiddenLayerSize, mns.outputLayerSize))
+
+    def forward(self, x):
+        y = self.forwardModel(x)
+        return y
+
 def createModelNetStructureFromDataStructure(numLayers : int,
                                              sizeLayers : int,
                                              activationType,
                                              modelDataStructure : ModelDataStructure):
     inputLayerSize = modelDataStructure.getInputDimensions()
     outputLayerSize = modelDataStructure.getOutputDimensions()
-    return ModelNetStructure(numLayers=numLayers,
-                             sizeLayers=sizeLayers,
-                             activationType=activationType,
-                             inputSize=inputLayerSize,
-                             outputSize=outputLayerSize)
+    return FCModelNetStructure(numLayers=numLayers,
+                               sizeLayers=sizeLayers,
+                               activationType=activationType,
+                               inputSize=inputLayerSize,
+                               outputSize=outputLayerSize)
 
 def createModelNetStructureFromDataset(numLayers : int,
                                      sizeLayers : int,
@@ -41,10 +59,10 @@ def createModelNetStructureFromDataset(numLayers : int,
                                      dataset : DatasetFromDataframe):
     inputLayerSize = dataset.getInputDimensions()
     outputLayerSize = dataset.getOutputDimensions()
-    return ModelNetStructure(numLayers=numLayers,
-                             sizeLayers=sizeLayers,
-                             activationType=activationType,
-                             inputSize=inputLayerSize,
-                             outputSize=outputLayerSize)
+    return FCModelNetStructure(numLayers=numLayers,
+                               sizeLayers=sizeLayers,
+                               activationType=activationType,
+                               inputSize=inputLayerSize,
+                               outputSize=outputLayerSize)
 
 

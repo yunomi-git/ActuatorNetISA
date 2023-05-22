@@ -3,8 +3,8 @@ import numpy as np
 from typing import Tuple
 
 
-import ModelInformation.DataNames as dn
-import SetupData.SimExportNames as sn
+import SetupData.Parameters.DataNames as dn
+import SetupData.Parameters.SimExportNames as sn
 import pandas as pd
 from enum import Enum
 import definitions

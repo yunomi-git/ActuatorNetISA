@@ -1,14 +1,3 @@
-import definitions
-import os
-from ModelInformation.DataNames import StateNames, StateDifferenceNames
-
-import numpy as np
-from SetupData import SimulationExportToCsv as sec
-import ModelInformation.DataNames as DataNames
-from SetupData.Dataset import DatasetFromDataframe
-from SetupData.Dataset import DatasetFromDataframe, DatasetFromCsv
-import SetupData.SimulationExportToCsv as Export
-import SetupData.SimExportNames as SimNames
 from Parameters.ModelV1Parameters import v1ModelDataSummary
 
 if __name__ == '__main__':

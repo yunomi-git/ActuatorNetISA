@@ -2,8 +2,11 @@ import definitions
 from SetupData.ModelDataStructure import ModelDataStructure
 
 from SetupData import SimulationExportToCsv as Export
-import SetupData.SimExportNames as SimNames
-from Parameters.ModelV1Parameters import _modelV1Structure
+import SetupData.Parameters.SimExportNames as SimNames
+from Parameters.ModelV2Parameters import _modelV2Structure
+import timeit
+
+
 
 def performExport(matFileName : str, modelStructure : ModelDataStructure):
     matlabData = Export.MatlabData(matFileName + ".mat", SimNames.parentRegistryNames)
@@ -25,9 +28,12 @@ def performExport(matFileName : str, modelStructure : ModelDataStructure):
 if __name__ == '__main__':
     dataName = "Flatgroundwalking_20220802"
 
-    modelStructure = _modelV1Structure
+    modelStructure = _modelV2Structure
     saveNameSuffix = modelStructure.getName()
 
+    start_time = timeit.default_timer()
     performExport(matFileName=dataName,
                   modelStructure=modelStructure)
+    end_time = timeit.default_timer()
+    print(f"Time taken: {end_time - start_time} seconds")
 

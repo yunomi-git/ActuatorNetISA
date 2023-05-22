@@ -1,4 +1,4 @@
-from ModelInformation.DataNames import StateNames, StateDifferenceNames
+from SetupData.Parameters.DataNames import StateNames, StateDifferenceNames
 
 class ModelDataStructure:
     # inputStateList and outputStateList are arrays of StateNames or StateDifferenceNames

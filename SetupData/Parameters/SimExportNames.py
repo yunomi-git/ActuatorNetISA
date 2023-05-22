@@ -1,4 +1,4 @@
-from ModelInformation.DataNames import StateNames, StateDifferenceNames
+from SetupData.Parameters.DataNames import StateNames
 
 parentRegistryNames = ["root", "main", "DRCEstimatorThread", "NadiaEtherCATRealtimeThread", "HardwareMap"]
 

@@ -4,7 +4,7 @@ from SetupData.ModelDataSummary import ModelDataSummary
 from SetupData.DataStatistics import DataStatistics
 
 
-_v1InputList = [StateDifferenceNames.errorPosition,
+_v2InputList = [StateDifferenceNames.errorPosition,
                 StateNames.measuredVelocity,
                 StateNames.measuredForce,
                 StateNames.measuredSpool,
@@ -14,17 +14,17 @@ _v1InputList = [StateDifferenceNames.errorPosition,
                 StateNames.desiredSpool,
                 StateNames.desiredCurrent]
 
-_v1OutputList = [StateDifferenceNames.errorPosition,
+_v2OutputList = [StateDifferenceNames.errorPosition,
                  StateNames.measuredVelocity,
                  StateNames.measuredForce,
                  StateNames.measuredSpool,
                  StateNames.measuredCurrent]
-_v1NumPastStates = 3
+_v2NumPastStates = 3
 
-_modelV1Structure = ModelDataStructure(inputStateList=_v1InputList,
-                                       outputStateList=_v1OutputList,
-                                       numPastStates=_v1NumPastStates,
-                                       name="v1")
+_modelV2Structure = ModelDataStructure(inputStateList=_v2InputList,
+                                       outputStateList=_v2OutputList,
+                                       numPastStates=_v2NumPastStates,
+                                       name="v2")
 
 _inputStateStatistics = DataStatistics(meansForSingleState=[5.71534395e-01,
                                                             1.50707935e-03,
@@ -44,7 +44,7 @@ _inputStateStatistics = DataStatistics(meansForSingleState=[5.71534395e-01,
                                                           1018.627,
                                                           2.817844,
                                                           1.3190902],
-                                       numPastStates=_v1NumPastStates)
+                                       numPastStates=_v2NumPastStates)
 _outputStateStatistics = DataStatistics(meansForSingleState=[5.7153428e-01,
                                                              1.5062783e-03,
                                                              1.1665521e+02,
@@ -58,7 +58,7 @@ _outputStateStatistics = DataStatistics(meansForSingleState=[5.7153428e-01,
 
 _datasetMatNames = ["Flatgroundwalking_20220802"]
 
-v1ModelDataSummary = ModelDataSummary(modelDataStructure=_modelV1Structure,
+v2ModelDataSummary = ModelDataSummary(modelDataStructure=_modelV2Structure,
                                       inputDataStatistics=_inputStateStatistics,
                                       outputDataStatistics=_outputStateStatistics,
                                       datasetMatNames=_datasetMatNames)

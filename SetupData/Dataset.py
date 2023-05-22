@@ -10,31 +10,29 @@ from SetupData.DataStatistics import DataStatistics
 
 class DatasetFromDataframe(torch.utils.data.Dataset):
     def __init__(self, inputDataframe : pd.DataFrame,
-                 outputDataframe : pd.DataFrame,
-                 inputStatistics : DataStatistics = None,
-                 outputStatistics : DataStatistics = None):
+                 outputDataframe : pd.DataFrame):
         self.numpy_dtype = 'float32'
         self.x = self.convertDataframeToDataset(inputDataframe)
         self.y = self.convertDataframeToDataset(outputDataframe)
         self.xHeaders = inputDataframe.columns
         self.yHeaders = outputDataframe.columns
 
-
-        self.normalizationSet = False
-        if inputStatistics is not None and outputStatistics is not None:
-            self.normalizationSet = True
-            self.inputNormalizationScale = inputStatistics.getNormalizationScaling()
-            self.outputNormalizationScale = outputStatistics.getNormalizationScaling()
-
+        # Takes a few seconds but insignificant relative to training
+        self.inputNormalizationScale = 1.0 / np.std(self.x, axis=0).astype('float32')
+        self.outputNormalizationScale = 1.0 / np.std(self.y, axis=0).astype('float32')
+        self.do_normalization = True
 
     def convertDataframeToDataset(self, dataFrame : pd.DataFrame) -> np.ndarray:
         return dataFrame.to_numpy(dtype=self.numpy_dtype)
+
+    def toggleNormalization(self, do_normalization):
+        self.do_normalization = do_normalization
 
     def __len__(self):
         return len(self.x)
 
     def __getitem__(self, idx):
-        if self.normalizationSet:
+        if self.do_normalization:
             return [self.inputNormalizationScale * self.x[idx],
                     self.outputNormalizationScale * self.y[idx]]
         else:
@@ -55,14 +53,9 @@ class DatasetFromDataframe(torch.utils.data.Dataset):
         return len(self.y[0,:])
 
 class DatasetFromCsv(DatasetFromDataframe):
-    def __init__(self, dataName : str,
-                 inputStatistics: DataStatistics = None,
-                 outputStatistics: DataStatistics = None
-                 ):
+    def __init__(self, dataName : str):
         inputPath = definitions.createPathToCsvDataFile(dataName, isInputs=True)
         outputPath = definitions.createPathToCsvDataFile(dataName, isInputs=False)
         xDataFrame = pd.read_csv(inputPath)
         yDataFrame = pd.read_csv(outputPath)
-        super().__init__(xDataFrame, yDataFrame,
-                         inputStatistics=inputStatistics,
-                         outputStatistics=outputStatistics)
+        super().__init__(xDataFrame, yDataFrame)

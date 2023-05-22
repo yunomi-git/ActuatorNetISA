@@ -1,25 +1,20 @@
-
-
 device:
     desc: The device to perform training on
-    value: gpu
-epochs:
-    desc: Number of epochs to train for
-    value: 100
-learning_rate:
-    desc: The learning rate of the Adam optimizer
-    value: 1.0e-3
-num_hidden_layers:
-    desc: Number of hidden layers in the network
-    value: 3
-hidden_layer_size:
-    desc: Number of nodes in each hidden layer
-    value: 36
-batch_size:
-    desc: The size of each mini-batch used in the optimizer
-    value: 128
-dataset:
-    desc: Base name of the csvs used to train the data
-    value: Flatgroundwalking_20220802
+    value: cpu
+model:
+    value:
+        num_hidden_layers: 3
+        hidden_layer_size: 36
+training:
+    value:
+        epochs: 30
+        learning_rate: 1.0e-3
+data:
+    value:
+        mat_file_name: Flatgroundwalking_20220802
+        batch_size: 8192
+        num_past_history: 3
+        state_description_name: v1
+        actuator_name: all
 plot:
     value: True

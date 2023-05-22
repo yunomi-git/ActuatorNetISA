@@ -8,30 +8,14 @@ from datetime import datetime
 import timeit
 
 import definitions
-from ModelInformation.NeuralNet import NeuralNet
-import ModelInformation.ModelNetStucture as mns
 from Visualization.Visualize import plot_predictions
-from Parameters.ModelV1Parameters import v1ModelDataSummary
-
-from definitions import ROOT_DIR
-
-
-def prepare_data(data, config):
-    train_data, val_data, test_data = data.get_splits()
-    train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True)
-    val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=config.batch_size, shuffle=True)
-    test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=config.batch_size, shuffle=True)
-    return train_dataloader, val_dataloader, test_dataloader
-
-
-
-
+import Model.ModelGenerator as ModelGenerator
+import SetupData.DatasetGenerator as DatasetGenerator
 
 def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
     # USE FOR DEBUG PURPOSES ONLY!
     # torch.manual_seed(45)
     # torch.use_deterministic_algorithms(True)
-    modelDataSummary = v1ModelDataSummary
 
     with wandb.init(project="actuator-net", config=config, dir=wandb_path):  # specifying wandb dir to always be located in project root
         config = wandb.config
@@ -42,28 +26,37 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         # Preparation logic
         device = config.device
 
-        dataFileName = config.dataset
-        dataset = modelDataSummary.getDatasetForMatName(dataFileName)
-        train_dataloader, val_dataloader, test_dataloader = prepare_data(dataset, config)
-
-        modelNetStructure = mns.createModelNetStructureFromDataset(numLayers=config.num_hidden_layers,
-                                                                   sizeLayers=config.hidden_layer_size,
-                                                                   activationType="",
-                                                                   dataset=dataset)
-        model = NeuralNet(mns=modelNetStructure).to(device)
+        # Set up the data
+        dataset_summary = DatasetGenerator.DatasetSummary(config.data)
+        print("Generating Data...")
+        generate_start = timeit.default_timer()
+        dataset = DatasetGenerator.generateDataset(dataset_summary)
+        generate_elapsed = timeit.default_timer() - generate_start
+        print("Data Generated. Time taken: " + str(generate_elapsed))
+        # dataFileName = config.data.dataset
+        # dataset = modelDataSummary.getDatasetForMatName(dataFileName)
+        train_dataloader, val_dataloader, test_dataloader = DatasetGenerator.prepare_data(dataset,
+                                                                                          config.data["batch_size"])
+        # Set up the model
+        model = ModelGenerator.createNeuralNetwork(ModelGenerator.ModelType.FULLY_CONNECTED,
+                                                   config.model,
+                                                   dataset,
+                                                   device)
         print(model)
 
+        # Set up the optimization
         criterion = torch.nn.MSELoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=config.training["learning_rate"])
 
         # Training and validation logic
         wandb.watch(model, criterion, log="all", log_freq=10)
+
         train_example_count = 0  # number of training examples seen
         val_example_count = 0
         train_batch_count = 0  # number of batches gone through
         val_batch_count = 0
         step = 0  # monotonically increasing step for wandb logging
-        for epoch in tqdm(range(config.epochs)):
+        for epoch in tqdm(range(config.training["epochs"])):
             # Training
             model.train()
             for i, (inputs, targets) in enumerate(train_dataloader):
@@ -142,5 +135,5 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         print(f"Time taken: {end_time - start_time} seconds")
 
         # NOTE: Be sure to set plot to False in hyperparameter sweep configs, else your sweeps will be interrupted!
-        if config.plot:
-            plot_predictions(predictions, actuals, outputNames, unnormScaling=modelDataSummary.outputDataStatistics.getUnNormalizationScaling())
+        # if config.plot:
+            # plot_predictions(predictions, actuals, outputNames, unnormScaling=modelDataSummary.outputDataStatistics.getUnNormalizationScaling())

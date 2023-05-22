@@ -6,8 +6,8 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))  # this will give us the p
 # DATA_DIR = os.path.join(ROOT_DIR, "..", "TrainingData")
 # WANDB_DIR = os.path.join(ROOT_DIR, "..")
 # This is for gpu server running
-DATA_DIR = os.path.join(ROOT_DIR, "data", "TrainingData")
-WANDB_DIR = os.path.join(ROOT_DIR, "data")
+DATA_DIR = os.path.join(ROOT_DIR, "..","SCSData")
+WANDB_DIR = os.path.join(ROOT_DIR, "..")
 
 
 def createPathToCsvDataFile(saveName, isInputs : bool):
