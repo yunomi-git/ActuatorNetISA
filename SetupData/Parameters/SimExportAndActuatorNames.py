@@ -2,6 +2,20 @@ from SetupData.Parameters.DataNames import StateNames
 
 parentRegistryNames = ["root", "main", "DRCEstimatorThread", "NadiaEtherCATRealtimeThread", "HardwareMap"]
 
+# actuatorNames = ["rightKneeISA",
+#                  "rightHipInnerISA",
+#                  "rightHipOuterISA",
+#                  "rightAnkleOuterISA",
+#                  "rightAnkleInnerISA",
+#                  "leftKneeISA",
+#                  "leftHipInnerISA",
+#                  "leftHipOuterISA",
+#                  "leftAnkleOuterISA",
+#                  "leftAnkleInnerISA",
+#                  "leftSpineISA",
+#                  "rightSpineISA"
+#                  ]
+
 actuatorNames = ["rightKneeISA",
                  "rightHipInnerISA",
                  "rightHipOuterISA",

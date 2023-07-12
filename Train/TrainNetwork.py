@@ -12,6 +12,10 @@ from Visualization.Visualize import plot_predictions
 import Model.ModelGenerator as ModelGenerator
 import SetupData.DatasetGenerator as DatasetGenerator
 
+#######
+#1. How to expand wandb logged data?
+#######
+
 def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
     # USE FOR DEBUG PURPOSES ONLY!
     # torch.manual_seed(45)
@@ -49,14 +53,17 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         optimizer = torch.optim.Adam(model.parameters(), lr=config.training["learning_rate"])
 
         # Training and validation logic
-        wandb.watch(model, criterion, log="all", log_freq=10)
+        wandb.watch(model, criterion, log="all", log_freq=10) #purpose of this line?
 
         train_example_count = 0  # number of training examples seen
         val_example_count = 0
         train_batch_count = 0  # number of batches gone through
         val_batch_count = 0
         step = 0  # monotonically increasing step for wandb logging
-        for epoch in tqdm(range(config.training["epochs"])):
+        print(f"Total Training Epoch" + str(config.training["epochs"]))
+        print(f"Learning Rate " + str(config.training["learning_rate"]))
+
+        for epoch in tqdm(range(config.training["epochs"])): #count in range with fancy progression bar tqdm
             # Training
             model.train()
             for i, (inputs, targets) in enumerate(train_dataloader):
@@ -72,7 +79,7 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
                 # Report metrics every 25th batch
                 if (train_batch_count + 1) % 25 == 0:
                     wandb.log({"epoch": epoch, "train_loss": train_loss}, step=step)
-                    print(f"Training loss after " + str(train_example_count) + f" examples: {train_loss:.3f}")
+                #     print(f"Training loss after " + str(train_example_count) + f" examples: {train_loss:.3f}")
 
             # Validation
             model.eval()

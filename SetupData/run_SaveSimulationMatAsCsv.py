@@ -2,7 +2,7 @@ import definitions
 from SetupData.ModelDataStructure import ModelDataStructure
 
 from SetupData import SimulationExportToCsv as Export
-import SetupData.Parameters.SimExportNames as SimNames
+import SetupData.Parameters.SimExportAndActuatorNames as SimNames
 from Parameters.ModelV2Parameters import _modelV2Structure
 import timeit
 

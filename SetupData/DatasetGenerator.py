@@ -1,7 +1,7 @@
 import torch
 from SetupData.Dataset import DatasetFromDataframe
 from SetupData.DataStateDescription import DataStateList
-import SetupData.Parameters.SimExportNames as SimNames
+import SetupData.Parameters.SimExportAndActuatorNames as SimNames
 from SetupData.ModelDataStructure import ModelDataStructure
 from SetupData import SimulationExportToCsv as Export
 

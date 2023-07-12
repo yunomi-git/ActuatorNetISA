@@ -4,7 +4,7 @@ from typing import Tuple
 
 
 import SetupData.Parameters.DataNames as dn
-import SetupData.Parameters.SimExportNames as sn
+import SetupData.Parameters.SimExportAndActuatorNames as sn
 import pandas as pd
 from enum import Enum
 import definitions
