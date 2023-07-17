@@ -7,14 +7,14 @@ model:
         hidden_layer_size: 36
 training:
     value:
-        epochs: 40 # try to play with this
+        epochs: 30 # try to play with this
         learning_rate: 1.0e-3 #1.0e-3 is the best setup!
 data:
     value:
-        mat_file_name: Flatgroundwalking_20220802
+        mat_file_name: Flatgroundwalking_20220802_LeftKneeISA
         batch_size: 8192
         num_past_history: 3 #how does it affect the result, was 3
         state_description_name: v1 #defined in DataStateDescription
-        actuator_name: rightKneeISA #configuration for specific actuator at SetupData > Parameters > SimExportNames
+        actuator_name: leftKneeISA #configuration for specific actuator at SetupData > Parameters > SimExportNames
 plot:
     value: True
