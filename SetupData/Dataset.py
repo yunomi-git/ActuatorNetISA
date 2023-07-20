@@ -38,13 +38,34 @@ class DatasetFromDataframe(torch.utils.data.Dataset):
         else:
             return [self.x[idx], self.y[idx]]
 
-    def get_splits(self, n_val=0.1, n_test=0.1):
+    def get_splits(self, n_val=0.1, n_test=0.25):
         # Determine sizes
         test_size = round(n_test * len(self.x))
         val_size = round(n_val * len(self.x))
         train_size = len(self.x) - test_size - val_size
         # Calculate the split
         return torch.utils.data.random_split(self, [train_size, val_size, test_size])
+        #return torch.utils.data.Subset(self, range(train_size, train_size + test_size))
+
+    def get_splits_no_random(self, n_val=0.1, n_test=0.15):
+        test_size = round(n_test * len(self.x))
+        val_size = round(n_val * len(self.x))
+        train_size = len(self.x) - test_size - val_size
+        train_set = torch.utils.data.Subset(self, range(0, train_size))
+        val_set = torch.utils.data.Subset(self, range(train_size, train_size+val_size))
+        test_set = torch.utils.data.Subset(self, range(train_size+val_size, len(self.x)))
+        return train_set, val_set, test_set
+
+    def get_splits_semi_random(self, n_val=0.1, n_test=0.1):
+        test_size = round(n_test * len(self.x))
+        val_size = round(n_val * len(self.x))
+        train_size = len(self.x) - test_size - val_size
+        train_set, val_set, no_use = torch.utils.data.random_split(self, [train_size, val_size, test_size])
+        test_set = torch.utils.data.Subset(self, range(train_size, len(self.x)))
+        return train_set, val_set, test_set
+
+    def get_data(self):
+        return self
 
     def getInputDimensions(self):
         return len(self.x[0,:])

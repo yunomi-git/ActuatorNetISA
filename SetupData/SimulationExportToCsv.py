@@ -65,11 +65,11 @@ def exportSimulationMatToDataframe(actuatorNames : list, numPastStates, inputSta
                 startingIndex = numPastStates - p - 1
                 appendDataToDictKey(inputDataFrame, newStateName, dataColumn[startingIndex: numDataForEachActuator + startingIndex])
 
-    fig, ax = plt.subplots(4,2, figsize=(6,10))
+    # fig, ax = plt.subplots(4,2, figsize=(6,10))
     # ax[0,0].plot(inputDataFrame['errorPosition_m0'], bins=100)
     # ax[0,0].set_title('Error Position')
-    ax[0,1].plot(inputDataFrame['measuredVelocity_m0'])
-    ax[0,1].set_title('Measured Velocity')
+    # ax[0,1].plot(inputDataFrame['measuredVelocity_m0'])
+    # ax[0,1].set_title('Measured Velocity')
     # ax[1,0].hist(inputDataFrame['measuredForce_m0'], bins=100)
     # ax[1,0].set_title('Measured Force')
     # ax[1,1].hist(inputDataFrame['measuredSpool_m0'], bins=100)
