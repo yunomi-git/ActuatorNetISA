@@ -128,21 +128,22 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
             predictions, actuals = np.vstack(predictions), np.vstack(actuals)
 
             outputNames = dataset.yHeaders
-            fig, ax = plt.subplots(4, 1, figsize=(14, 6))
+            fig, ax = plt.subplots(4, 1, figsize=(6, 10), sharex=True)
             #fig, ax = plt.plot(1, 1, figsize=(14, 6))
-            ax[0].plot(predictions[:, 1],color='blue', label=f"Predicted {outputNames[i]}", linestyle='dashed')  #Force
-            ax[0].plot(actuals[:, 1], color='red', label="Actual Velocity")
-            fig.legend()
-
             mseDictionary = {}
             abeDictionary = {}
             for i in range(len(outputNames)):
                 mse = mean_squared_error(actuals[:, i], predictions[:, i])  # Here <<<<<<
                 abe = mean_absolute_error(actuals[:, i], predictions[:, i])
+                ax[i].plot(actuals[:, i], color='seagreen', label=f"Actual {outputNames[i]}", linewidth=1.5)
+                ax[i].plot(predictions[:, i], color='dimgray', label=f"Predicted {outputNames[i]}",
+                           linestyle="dotted", linewidth=1)
+                ax[i].legend()
                 print(f"{outputNames[i]}: MSE = {mse}, RMSE = {np.sqrt(mse)}")
                 mseDictionary["mse_" + outputNames[i]] = mse
                 print(f"{outputNames[i]}: ABE = {abe}")
                 abeDictionary["abe_" + outputNames[i]] = abe
+            fig.show()
             wandb.log(mseDictionary)
             wandb.log(abeDictionary)
             # mse_x = mean_squared_error(actuals[:, 0], predictions[:, 0])
