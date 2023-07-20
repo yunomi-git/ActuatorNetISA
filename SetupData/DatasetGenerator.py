@@ -43,7 +43,7 @@ def generateDataset(dataset_summary : DatasetSummary) -> DatasetFromDataframe:
 
 def prepare_data(data : DatasetFromDataframe, batch_size):
     train_data, val_data, test_data = data.get_splits()
-    train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True)
-    val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=batch_size, shuffle=True)
-    test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=True)
+    train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=False)
+    val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=batch_size, shuffle=False)
+    test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=False)
     return train_dataloader, val_dataloader, test_dataloader

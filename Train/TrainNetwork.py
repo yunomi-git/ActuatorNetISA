@@ -1,11 +1,13 @@
 import torch
 import numpy as np
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 import wandb
 from tqdm import tqdm
 import os
 from datetime import datetime
 import timeit
+import pylab as pl
 
 import definitions
 from Visualization.Visualize import plot_predictions
@@ -27,8 +29,18 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         # Start timing
         start_time = timeit.default_timer()
 
-        # Preparation logic
-        device = config.device
+        # setting device on GPU if available, else CPU
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print('Device count:', torch.cuda.device_count())
+        print('Using device:', device)
+        print()
+
+        # Additional Info when using cuda
+        if device.type == 'cuda':
+            print(torch.cuda.get_device_name(0))
+            print('Memory Usage:')
+            print('Allocated:', round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1), 'GB')
+            print('Cached:   ', round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1), 'GB')
 
         # Set up the data
         dataset_summary = DatasetGenerator.DatasetSummary(config.data)
@@ -37,8 +49,7 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         dataset = DatasetGenerator.generateDataset(dataset_summary)
         generate_elapsed = timeit.default_timer() - generate_start
         print("Data Generated. Time taken: " + str(generate_elapsed))
-        # dataFileName = config.data.dataset
-        # dataset = modelDataSummary.getDatasetForMatName(dataFileName)
+        # Assign Data
         train_dataloader, val_dataloader, test_dataloader = DatasetGenerator.prepare_data(dataset,
                                                                                           config.data["batch_size"])
         # Set up the model
@@ -53,7 +64,7 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         optimizer = torch.optim.Adam(model.parameters(), lr=config.training["learning_rate"])
 
         # Training and validation logic
-        wandb.watch(model, criterion, log="all", log_freq=10) #purpose of this line?
+        wandb.watch(model, criterion, log="all", log_freq=10)
 
         train_example_count = 0  # number of training examples seen
         val_example_count = 0
@@ -63,14 +74,16 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         print(f"Total Training Epoch" + str(config.training["epochs"]))
         print(f"Learning Rate " + str(config.training["learning_rate"]))
 
-        for epoch in tqdm(range(config.training["epochs"])): #count in range with fancy progression bar tqdm
+        for epoch in tqdm(range(config.training["epochs"])): #count in range with progression bar tqdm
             # Training
             model.train()
             for i, (inputs, targets) in enumerate(train_dataloader):
                 inputs, targets = inputs.to(device), targets.to(device)
                 optimizer.zero_grad()  # clear the gradients
+
                 yhat = model(inputs)  # compute the model output
                 train_loss = criterion(yhat, targets)  # calculate loss
+
                 train_loss.backward()  # credit assignment
                 optimizer.step()  # update model weights
 
@@ -82,7 +95,7 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
                 #     print(f"Training loss after " + str(train_example_count) + f" examples: {train_loss:.3f}")
 
             # Validation
-            model.eval()
+            model.eval()  # Evaluation mode
             with torch.no_grad():
                 for i, (inputs, targets) in enumerate(val_dataloader):
                     inputs, targets = inputs.to(device), targets.to(device)
@@ -94,7 +107,7 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
                     # Report metrics every 25th batch
                     if (val_batch_count + 1) % 25 == 0:
                         wandb.log({"epoch": epoch, "val_loss": val_loss}, step=step)
-                        print(f"Validation loss after " + str(val_example_count) + f" examples: {val_loss:.3f}")
+                        #print(f"Validation loss after " + str(val_example_count) + f" examples: {val_loss:.3f}")
 
             step += 1
 
@@ -113,14 +126,24 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
                 actuals.append(actual)
             predictions, actuals = np.vstack(predictions), np.vstack(actuals)
 
+            pl.figure(figsize=(14,6))
+            pl.plot(actuals[:, 2])  #Velocity
+            pl.plot(actuals[:, 3])  #Force
+            pl.pause(1)
+
             outputNames = dataset.yHeaders
             mseDictionary = {}
+            abeDictionary = {}
             for i in range(len(outputNames)):
-                mse = mean_squared_error(actuals[:, i], predictions[:, i])
+                mse = mean_squared_error(actuals[:, i], predictions[:, i])  # Here <<<<<<
+                abe = mean_absolute_error(actuals[:, i], predictions[:, i])
                 print(f"{outputNames[i]}: MSE = {mse}, RMSE = {np.sqrt(mse)}")
                 mseDictionary["mse_" + outputNames[i]] = mse
+                print(f"{outputNames[i]}: ABE = {abe}")
+                abeDictionary["abe_" + outputNames[i]] = abe
 
-            wandb.log(mseDictionary)
+         #   wandb.log(mseDictionary)
+         #   wandb.log(abeDictionary)
             # mse_x = mean_squared_error(actuals[:, 0], predictions[:, 0])
             # mse_y = mean_squared_error(actuals[:, 1], predictions[:, 1])
             # mse_z = mean_squared_error(actuals[:, 2], predictions[:, 2])

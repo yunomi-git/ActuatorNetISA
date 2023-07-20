@@ -29,17 +29,14 @@ _v2InputList = [StateDifferenceNames.errorPosition,
                 StateNames.measuredVelocity,
                 StateNames.measuredForce,
                 StateNames.measuredSpool,
-                StateNames.measuredCurrent,
                 StateNames.desiredVelocity,
                 StateNames.desiredForce,
-                StateNames.desiredSpool,
-                StateNames.desiredCurrent]
+                StateNames.desiredSpool]
 
 _v2OutputList = [StateDifferenceNames.errorPosition,
                  StateNames.measuredVelocity,
                  StateNames.measuredForce,
-                 StateNames.measuredSpool,
-                 StateNames.measuredCurrent]
+                 StateNames.measuredSpool]
 
 v2DataState = DataStateDescription(_v2InputList, _v2OutputList)
 

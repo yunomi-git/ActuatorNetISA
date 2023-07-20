@@ -20,7 +20,7 @@ class DatasetFromDataframe(torch.utils.data.Dataset):
         # Takes a few seconds but insignificant relative to training
         self.inputNormalizationScale = 1.0 / np.std(self.x, axis=0).astype('float32')
         self.outputNormalizationScale = 1.0 / np.std(self.y, axis=0).astype('float32')
-        self.do_normalization = True
+        self.do_normalization = False
 
     def convertDataframeToDataset(self, dataFrame : pd.DataFrame) -> np.ndarray:
         return dataFrame.to_numpy(dtype=self.numpy_dtype)

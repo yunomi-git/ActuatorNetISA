@@ -1,4 +1,5 @@
 # Takes a Mat file from a nadia simulation and turns it into a dataset saved as a Csv
+import matplotlib.pyplot as plt
 import numpy as np
 from typing import Tuple
 
@@ -19,8 +20,8 @@ class MatlabData:
 
     def extractMatDataAsSimplifiedDict(self, fileName, parentRegistryList) -> dict:
         path = os.path.join(definitions.DATA_DIR, fileName)
-        originalMat = scipy.io.loadmat(path, simplify_cells=True)
-        simplifiedMat = originalMat
+        simplifiedMat = scipy.io.loadmat(path, simplify_cells=True)
+
         for registry in parentRegistryList:
             simplifiedMat = simplifiedMat[registry]
 
@@ -58,11 +59,28 @@ def exportSimulationMatToDataframe(actuatorNames : list, numPastStates, inputSta
             # Extract the corresponding data from mat
             dataColumn = extractColumnFromMatDataByState(matData, actuatorName, stateEnum)
 
-            # Save the data in corresponding input vector form
+            # Save the data in corresponding input vectoturr form
             for p in range(numPastStates):
                 newStateName = stateEnum.value + "_m" + str(p)
                 startingIndex = numPastStates - p - 1
                 appendDataToDictKey(inputDataFrame, newStateName, dataColumn[startingIndex: numDataForEachActuator + startingIndex])
+
+    fig, ax = plt.subplots(4,2, figsize=(6,10))
+    # ax[0,0].plot(inputDataFrame['errorPosition_m0'], bins=100)
+    # ax[0,0].set_title('Error Position')
+    ax[0,1].plot(inputDataFrame['measuredVelocity_m0'])
+    ax[0,1].set_title('Measured Velocity')
+    # ax[1,0].hist(inputDataFrame['measuredForce_m0'], bins=100)
+    # ax[1,0].set_title('Measured Force')
+    # ax[1,1].hist(inputDataFrame['measuredSpool_m0'], bins=100)
+    # ax[1,1].set_title('Measured Spool')
+    # ax[2,0].hist(inputDataFrame['desiredVelocity_m0'], bins=100)
+    # ax[2,0].set_title('Desired Velocity')
+    # ax[2,1].hist(inputDataFrame['desiredForce_m0'], bins=100)
+    # ax[2,1].set_title('Desired Force')
+    # ax[3,0].hist(inputDataFrame['desiredSpool_m0'], bins=100)
+    # ax[3,0].set_title('Desired Spool')
+    plt.pause(1)
 
     for stateEnum in outputStates:
         for actuatorName in actuatorNames:

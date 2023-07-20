@@ -1,13 +1,13 @@
 device:
     desc: The device to perform training on
-    value: cpu #either cpu or cuda for optimization
+    value: cuda #either cpu or cuda for optimization
 model:
     value:
         num_hidden_layers: 3 #5 layer doesn't make much difference
         hidden_layer_size: 36
 training:
     value:
-        epochs: 30 # try to play with this
+        epochs: 20 # try to play with this
         learning_rate: 1.0e-3 #1.0e-3 is the best setup!
 data:
     value:
