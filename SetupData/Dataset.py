@@ -56,11 +56,10 @@ class DatasetFromDataframe(torch.utils.data.Dataset):
         test_set = torch.utils.data.Subset(self, range(train_size, len(self.x)))
         return train_set, val_set, test_set
 
-    def get_splits_semi_random(self, n_val=0.1, n_test=0.1):
-        test_size = round(n_test * len(self.x))
+    def get_splits_semi_random(self, n_val=0.4):
         val_size = round(n_val * len(self.x))
-        train_size = len(self.x) - test_size - val_size
-        train_set, val_set, no_use = torch.utils.data.random_split(self, [train_size, val_size, test_size])
+        train_size = len(self.x) - val_size
+        train_set, val_set = torch.utils.data.random_split(self, [train_size, val_size])
         test_set = torch.utils.data.Subset(self, range(0, len(self.x)))
         return train_set, val_set, test_set
 
