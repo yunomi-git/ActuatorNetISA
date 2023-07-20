@@ -61,7 +61,7 @@ class DatasetFromDataframe(torch.utils.data.Dataset):
         val_size = round(n_val * len(self.x))
         train_size = len(self.x) - test_size - val_size
         train_set, val_set, no_use = torch.utils.data.random_split(self, [train_size, val_size, test_size])
-        test_set = torch.utils.data.Subset(self, range(train_size, len(self.x)))
+        test_set = torch.utils.data.Subset(self, range(0, len(self.x)))
         return train_set, val_set, test_set
 
     def get_data(self):
