@@ -56,11 +56,15 @@ class DatasetFromDataframe(torch.utils.data.Dataset):
         test_set = torch.utils.data.Subset(self, range(train_size, len(self.x)))
         return train_set, val_set, test_set
 
-    def get_splits_semi_random(self, n_val=0.4):
+    # This function kept n_test amount of data unseen by both training and validation
+    def get_splits_semi_random(self, n_val=0.25, n_test=0.1):
         val_size = round(n_val * len(self.x))
-        train_size = len(self.x) - val_size
-        train_set, val_set = torch.utils.data.random_split(self, [train_size, val_size])
+        test_size = round(n_test * len(self.x))
+        train_size = len(self.x) - val_size - test_size
+        val_n_train_set = torch.utils.data.Subset(self, range(0, train_size + val_size))
+        train_set, val_set = torch.utils.data.random_split(val_n_train_set, [train_size, val_size])
         test_set = torch.utils.data.Subset(self, range(0, len(self.x)))
+        print("Validation Size is: " + str(n_val) + " Training Size: " + str(1-n_val-n_test))
         return train_set, val_set, test_set
 
     def get_data(self):
