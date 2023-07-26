@@ -1,16 +1,23 @@
 import torch
 import numpy as np
+from matplotlib import pyplot as plt
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 import wandb
 from tqdm import tqdm
 import os
 from datetime import datetime
 import timeit
+import pylab as pl
 
 import definitions
 from Visualization.Visualize import plot_predictions
 import Model.ModelGenerator as ModelGenerator
 import SetupData.DatasetGenerator as DatasetGenerator
+
+#######
+#1. How to expand wandb logged data?
+#######
 
 def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
     # USE FOR DEBUG PURPOSES ONLY!
@@ -23,8 +30,18 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         # Start timing
         start_time = timeit.default_timer()
 
-        # Preparation logic
-        device = config.device
+        # setting device on GPU if available, else CPU
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print('Device count:', torch.cuda.device_count())
+        print('Using device:', device)
+        print()
+
+        # Additional Info when using cuda
+        if device.type == 'cuda':
+            print(torch.cuda.get_device_name(0))
+            print('Memory Usage:')
+            print('Allocated:', round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1), 'GB')
+            print('Cached:   ', round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1), 'GB')
 
         # Set up the data
         dataset_summary = DatasetGenerator.DatasetSummary(config.data)
@@ -33,8 +50,7 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         dataset = DatasetGenerator.generateDataset(dataset_summary)
         generate_elapsed = timeit.default_timer() - generate_start
         print("Data Generated. Time taken: " + str(generate_elapsed))
-        # dataFileName = config.data.dataset
-        # dataset = modelDataSummary.getDatasetForMatName(dataFileName)
+        # Assign Data
         train_dataloader, val_dataloader, test_dataloader = DatasetGenerator.prepare_data(dataset,
                                                                                           config.data["batch_size"])
         # Set up the model
@@ -56,14 +72,20 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         train_batch_count = 0  # number of batches gone through
         val_batch_count = 0
         step = 0  # monotonically increasing step for wandb logging
-        for epoch in tqdm(range(config.training["epochs"])):
+        print(f"Total Training Epoch: " + str(config.training["epochs"]))
+        print(f"Learning Rate: " + str(config.training["learning_rate"]))
+        print(f"Batch Size: " + str(config.data["batch_size"]))
+
+        for epoch in tqdm(range(config.training["epochs"])): #count in range with progression bar tqdm
             # Training
             model.train()
             for i, (inputs, targets) in enumerate(train_dataloader):
                 inputs, targets = inputs.to(device), targets.to(device)
                 optimizer.zero_grad()  # clear the gradients
+
                 yhat = model(inputs)  # compute the model output
                 train_loss = criterion(yhat, targets)  # calculate loss
+
                 train_loss.backward()  # credit assignment
                 optimizer.step()  # update model weights
 
@@ -72,10 +94,10 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
                 # Report metrics every 25th batch
                 if (train_batch_count + 1) % 25 == 0:
                     wandb.log({"epoch": epoch, "train_loss": train_loss}, step=step)
-                    print(f"Training loss after " + str(train_example_count) + f" examples: {train_loss:.3f}")
+                #     print(f"Training loss after " + str(train_example_count) + f" examples: {train_loss:.3f}")
 
             # Validation
-            model.eval()
+            model.eval()  # Evaluation mode
             with torch.no_grad():
                 for i, (inputs, targets) in enumerate(val_dataloader):
                     inputs, targets = inputs.to(device), targets.to(device)
@@ -87,8 +109,7 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
                     # Report metrics every 25th batch
                     if (val_batch_count + 1) % 25 == 0:
                         wandb.log({"epoch": epoch, "val_loss": val_loss}, step=step)
-                        print(f"Validation loss after " + str(val_example_count) + f" examples: {val_loss:.3f}")
-
+                        #print(f"Validation loss after " + str(val_example_count) + f" examples: {val_loss:.3f}")
             step += 1
 
 
@@ -96,7 +117,7 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
         model.eval()
         with torch.no_grad():
             predictions, actuals = list(), list()
-            for i, (inputs, targets) in enumerate(test_dataloader):
+            for i, (inputs, targets) in enumerate(test_dataloader): #train_dataloader
                 inputs = inputs.to(device)  # only send inputs to GPU, as targets don't need to go through model
                 yhat = model(inputs)
                 yhat = yhat.cpu()
@@ -107,13 +128,24 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
             predictions, actuals = np.vstack(predictions), np.vstack(actuals)
 
             outputNames = dataset.yHeaders
+            fig, ax = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
+            #fig, ax = plt.plot(1, 1, figsize=(14, 6))
             mseDictionary = {}
+            abeDictionary = {}
             for i in range(len(outputNames)):
-                mse = mean_squared_error(actuals[:, i], predictions[:, i])
+                mse = mean_squared_error(actuals[:, i], predictions[:, i])  # Here <<<<<<
+                abe = mean_absolute_error(actuals[:, i], predictions[:, i])
+                ax[i].plot(actuals[:, i], color='seagreen', label=f"Actual {outputNames[i]}", linewidth=1.5)
+                ax[i].plot(predictions[:, i], color='dimgray', label=f"Predicted {outputNames[i]}",
+                           linestyle="dotted", linewidth=1)
+                ax[i].legend()
                 print(f"{outputNames[i]}: MSE = {mse}, RMSE = {np.sqrt(mse)}")
                 mseDictionary["mse_" + outputNames[i]] = mse
-
+                print(f"{outputNames[i]}: ABE = {abe}")
+                abeDictionary["abe_" + outputNames[i]] = abe
+            fig.show()
             wandb.log(mseDictionary)
+            wandb.log(abeDictionary)
             # mse_x = mean_squared_error(actuals[:, 0], predictions[:, 0])
             # mse_y = mean_squared_error(actuals[:, 1], predictions[:, 1])
             # mse_z = mean_squared_error(actuals[:, 2], predictions[:, 2])

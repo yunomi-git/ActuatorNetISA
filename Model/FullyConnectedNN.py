@@ -64,5 +64,3 @@ def createModelNetStructureFromDataset(numLayers : int,
                                activationType=activationType,
                                inputSize=inputLayerSize,
                                outputSize=outputLayerSize)
-
-

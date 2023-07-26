@@ -25,21 +25,15 @@ _v1OutputList = [StateDifferenceNames.errorPosition,
 v1DataState = DataStateDescription(_v1InputList, _v1OutputList)
 
 # --------------------- V2 -------------------------------
-_v2InputList = [StateDifferenceNames.errorPosition,
-                StateNames.measuredVelocity,
+_v2InputList = [StateNames.measuredVelocity,
                 StateNames.measuredForce,
                 StateNames.measuredSpool,
-                StateNames.measuredCurrent,
                 StateNames.desiredVelocity,
                 StateNames.desiredForce,
-                StateNames.desiredSpool,
-                StateNames.desiredCurrent]
+                StateNames.desiredSpool]
 
-_v2OutputList = [StateDifferenceNames.errorPosition,
-                 StateNames.measuredVelocity,
-                 StateNames.measuredForce,
-                 StateNames.measuredSpool,
-                 StateNames.measuredCurrent]
+_v2OutputList = [StateNames.measuredVelocity,
+                 StateNames.measuredForce]
 
 v2DataState = DataStateDescription(_v2InputList, _v2OutputList)
 
