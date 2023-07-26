@@ -128,7 +128,7 @@ def model_pipleline(config=None, wandb_path=definitions.WANDB_DIR):
             predictions, actuals = np.vstack(predictions), np.vstack(actuals)
 
             outputNames = dataset.yHeaders
-            fig, ax = plt.subplots(4, 1, figsize=(8, 13), sharex=True)
+            fig, ax = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
             #fig, ax = plt.plot(1, 1, figsize=(14, 6))
             mseDictionary = {}
             abeDictionary = {}
